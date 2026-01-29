@@ -1,0 +1,13 @@
+Adafruit_PCA9685==1.0.1
+Flask==3.1.2
+flask_cors==6.0.2
+gpiozero==2.0.1
+greenlet==3.3.0
+imutils==0.5.4
+numpy==2.4.1
+paho_mqtt==2.1.0
+picamera2==0.3.33
+PID==3.0.4
+pynput==1.8.1
+rpi_ws281x==5.0.0
+thread==2.0.6

@@ -2,7 +2,7 @@ from move import move, setup, motorStop
 from LED import LED, fiesta, fiesta_off
 import paho.mqtt.client as mqtt
 
-BROKER = "10.86.165.33"
+BROKER = "192.168.1.76"
 TOPIC = "pc/keyboard"
 led = LED()
 

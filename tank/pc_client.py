@@ -1,7 +1,7 @@
 from pynput import keyboard
 import paho.mqtt.client as mqtt
 
-BROKER = "RASPBERRY_PI_IP"   # e.g. 192.168.1.50
+BROKER = "192.168.1.76"
 TOPIC = "pc/keyboard"
 
 client = mqtt.Client()
