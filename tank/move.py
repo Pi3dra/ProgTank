@@ -63,7 +63,6 @@ def setup():	# Motor initialization
 
 
 def motor_right(status, direction, speed):	# Motor 2 positive and negative rotation
-	print("RIGHT")
 	if status == 0:	# stop
 		GPIO.output(Motor_B_Pin1, GPIO.LOW)
 		GPIO.output(Motor_B_Pin2, GPIO.LOW)
@@ -82,7 +81,6 @@ def motor_right(status, direction, speed):	# Motor 2 positive and negative rotat
 
 
 def motor_left(status, direction, speed):	# Motor 1 positive and negative rotationprinprinprint 
-	print("LEFT")
 	if status == 0:	# stop
 		GPIO.output(Motor_A_Pin1, GPIO.LOW)
 		GPIO.output(Motor_A_Pin2, GPIO.LOW)
@@ -152,7 +150,6 @@ if __name__ == '__main__':
 		# move(100, 'left', 0.6)
 		# time.sleep(5)
 
-		print('1')
 
 		move(100, 'forward', 'left')
 		time.sleep(5)

@@ -1,0 +1,22 @@
+
+check mosquitto with:
+
+```shell
+sudo systemctl restart mosquitto
+sudo systemctl status mosquitto
+
+sudo nano /etc/mosquitto/mosquitto.conf
+```
+
+Remember to replace IPs adresses in:
+
+- mosquitto conf
+- rasp_server
+- pc_client
+
+run rasp server with:
+
+```
+sudo ~/ProgTank/tankenv/bin/python3 rasp_server.py
+```
+

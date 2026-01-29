@@ -1,5 +1,6 @@
-from pynput import keyboard
+import keyboard
 import paho.mqtt.client as mqtt
+import os
 
 BROKER = "192.168.1.76"
 TOPIC = "pc/keyboard"
@@ -8,31 +9,17 @@ client = mqtt.Client()
 client.connect(BROKER, 1883)
 client.loop_start()
 
-print("Sending key presses (ESC to quit)")
-
-def on_press(key):
-    try:
-        msg = f"press:{key.char}"
-    except AttributeError:
-        msg = f"press:{key.name}"
+def send_key(event):
+    if event.event_type == "down":
+        os.system("clear")
+        msg = f"press:{event.name}"
+    elif event.event_type == "up":
+        msg = f"release:{event.name}"
+    print(f"Sending: {msg}")
     client.publish(TOPIC, msg)
 
-def on_release(key):
-    try:
-        msg = f"release:{key.char}"
-    except AttributeError:
-        msg = f"release:{key.name}"
-    client.publish(TOPIC, msg)
-
-    if key == keyboard.Key.esc:
-        print("Exiting")
-        client.loop_stop()
-        client.disconnect()
-        return False
-
-with keyboard.Listener(
-    on_press=on_press,
-    on_release=on_release
-) as listener:
-    listener.join()
+keyboard.hook(send_key)
+keyboard.wait("esc")
+client.loop_stop()
+client.disconnect()
 

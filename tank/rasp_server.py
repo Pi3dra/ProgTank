@@ -1,6 +1,7 @@
 from move import move, setup, motorStop
 from LED import LED, fiesta, fiesta_off
 import paho.mqtt.client as mqtt
+import sys
 
 BROKER = "192.168.1.76"
 TOPIC = "pc/keyboard"
@@ -21,6 +22,11 @@ def on_message(client, userdata, msg):
             move(100, 'backward', "left")
         if (input_data[1] == "space"):
             fiesta(led)
+        if (input_data[1] == "esc"):
+            print("Exiting")
+            client.disconnect()
+            sys.exit(0)
+        
     elif (input_data[0] == "release"):
         motorStop()
 

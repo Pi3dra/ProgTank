@@ -58,14 +58,20 @@ class LED:
             self.strip.setPixelColor(i, color)
             self.strip.show()
 
+import threading
+
 def fiesta(led):
-    for _ in range(3):
-        led.colorWipe(255, 0, 0)  # red
-        time.sleep(1)  
-        led.colorWipe(0, 255, 0)  # green
-        time.sleep(1)  
-        led.colorWipe(0, 0, 255)  # blue
-        time.sleep(1)
+    def run():
+        for _ in range(5):
+            led.colorWipe(255, 0, 0)  # red
+            time.sleep(0.2)  
+            led.colorWipe(0, 255, 0)  # green
+            time.sleep(0.2)  
+            led.colorWipe(0, 0, 255)  # blue
+            time.sleep(0.2)
+    t = threading.Thread(target=run)
+    t.start()
+    led.colorWipe(0, 0, 0)
 
 def fiesta_off(led):
     led.turn_off()
@@ -74,12 +80,6 @@ def fiesta_off(led):
 if __name__ == '__main__':
     led = LED()
     try:  
-        while True:  
-            led.colorWipe(255, 0, 0)  # red
-            time.sleep(0.5)  
-            led.colorWipe(0, 255, 0)  # green
-            time.sleep(0.5)  
-            led.colorWipe(0, 0, 255)  # blue
-            time.sleep(0.5) 
+        fiesta(led)
     except:  
         led.colorWipe(0,0,0)  # Lights out
