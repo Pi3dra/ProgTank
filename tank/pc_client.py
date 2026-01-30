@@ -9,6 +9,7 @@ client = mqtt.Client()
 client.connect(BROKER, 1883)
 client.loop_start()
 
+
 def send_key(event):
     if event.event_type == "down":
         os.system("clear")
@@ -18,8 +19,8 @@ def send_key(event):
     print(f"Sending: {msg}")
     client.publish(TOPIC, msg)
 
+
 keyboard.hook(send_key)
 keyboard.wait("esc")
 client.loop_stop()
 client.disconnect()
-
