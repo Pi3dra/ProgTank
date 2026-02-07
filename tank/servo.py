@@ -242,11 +242,3 @@ def get_direction():
     return pwm0_pos - pwm0_init
 
 
-if __name__ == "__main__":
-
-    channel = 0  # servo port number.
-    while True:
-        pwm.set_pwm(channel, 0, 150)
-        time.sleep(1)
-        pwm.set_pwm(channel, 0, 450)
-        time.sleep(1)

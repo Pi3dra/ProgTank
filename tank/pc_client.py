@@ -5,7 +5,7 @@ import os
 BROKER = "192.168.1.76"
 TOPIC = "pc/keyboard"
 
-client = mqtt.Client()
+client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2)
 client.connect(BROKER, 1883)
 client.loop_start()
 
@@ -22,5 +22,6 @@ def send_key(event):
 
 keyboard.hook(send_key)
 keyboard.wait("esc")
+print("Waiting for input...")
 client.loop_stop()
 client.disconnect()
