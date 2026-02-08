@@ -1,5 +1,4 @@
 import uuid
-import sys
 import threading
 import time
 import RPi.GPIO as GPIO
@@ -7,7 +6,7 @@ import paho.mqtt.client as mqtt
 
 import InfraLib
 from move import move, setup as move_setup, motorStop
-from LED import LED, fiesta
+from LED import LED, setcolor
 
 # ------------------------
 # Global shutdown event
@@ -48,10 +47,8 @@ def read_line_sensor():
 
 def line_sensor_loop(stop_event):
     last_state = None  
-
     while not stop_event.is_set():
         current_state = read_line_sensor()
-
         if last_state is None:
             last_state = current_state
             time.sleep(0.05)
@@ -63,7 +60,6 @@ def line_sensor_loop(stop_event):
                     f"{GAME_TOPIC_PREFIX}/{TANK_ID}/flag",
                     "ENTER_FLAG_AREA"
                 )
-
         elif last_state == 0 and current_state == 1:
             if game_client:
                 game_client.publish(
@@ -81,34 +77,22 @@ def ir_loop(stop_event):
     while not stop_event.is_set():
         received = InfraLib.getSignal(IR_RECEIVER)
         if received is not None:
-            #weapon = str(received)[:4]
-
-            #shooter_id_hex = str(received)[4:]
-            #shooter_id_dec = str(int(shooter_id_hex, 16))  
-
-            #payload = f"{weapon}{shooter_id_dec}"
-
-            #print(f"IR received: {received} -> payload sent: {payload}")
-
             game_client.publish(
                 f"{GAME_TOPIC_PREFIX}/{TANK_ID}/shots",
                 f"SHOT_BY {received}"
             )
-
 # ------------------------
 # Controller MQTT callback
 # ------------------------
 def on_controller_message(client, userdata, msg):
     payload = msg.payload.decode()
     parts = payload.split(":")
-
     if len(parts) != 2:
         return
-
     action, key = parts
-    print(f"Controller -> {action}:{key}")
 
     if action == "press":
+        print(f"Controller -> {action}:{key}")
         match key:
             case "up":
                 move(100, "forward", "don't turn")
@@ -118,14 +102,15 @@ def on_controller_message(client, userdata, msg):
                 move(100, "backward", "right")
             case "right":
                 move(100, "backward", "left")
-            case "space":
-                fiesta(led)
             case "f":
                 InfraLib.IRBlast(int(TANK_ID), "LASER")
             case "esc":
                 print("Exit requested from controller")
                 shutdown_event.set()
-
+    elif action == "QR_CODE":
+        if HAS_FLAG:
+            client.publish(f"{GAME_TOPIC_PREFIX}/{TANK_ID}/qr_code", f"QR_CODE {key}")
+            print(f"Game Server -> {GAME_TOPIC_PREFIX}/{TANK_ID}/qr_code  QR_CODE {key}")
     elif action == "release":
         if key in ("up", "down", "left", "right"):
             motorStop()
@@ -140,47 +125,36 @@ HAS_FLAG = False
 def on_game_message(client, userdata, msg):
     payload = msg.payload.decode()
     topic = msg.topic
-
-    global TEAM_COLOR
-    global QR_CODE
-    global HAS_FLAG
+    global TEAM_COLOR, QR_CODE, HAS_FLAG
 
     print(f"Game server -> {topic}: {payload}")
-
-    global TEAM_COLOR, QR_CODE
 
     if payload.startswith("TEAM"):
         _, TEAM_COLOR = payload.split()
         print(f"Assigned team: {TEAM_COLOR}")
-
+        setcolor(led, TEAM_COLOR)
     elif payload.startswith("QR_CODE"):
         _, QR_CODE = payload.split()
         print(f"Assigned QR code: {QR_CODE}")
-
     elif payload == "START_CATCHING":
         print("Started catching the flag")
-
     elif payload == "ABORT_CATCHING_EXIT":
         print("Flag catching aborted (exit area)")
-
     elif payload == "ABORT_CATCHING_SHOT":
         print("Flag catching aborted (shot)")
-
     elif payload == "FLAG_CATCHED":
+        print("Flag catched!")
         HAS_FLAG = True
-
     elif payload == "FLAG_LOST":
+        print("Flag lost!")
         HAS_FLAG = False
-
     elif payload == "FLAG_DEPOSITED":
         print("Flag successfully deposited!")
-
+        HAS_FLAG = False
     elif payload.startswith("WIN"):
         print(f"Game won: {payload}")
-
     elif payload == "SHOT":
         print("You got shot!")
-
     elif payload == "FRIENDLY_FIRE":
         print("Friendly fire!")
 
@@ -246,20 +220,20 @@ def main():
     game_client.loop_start()
 
     ir_thread.start()
-
     move_setup()
     print("Tank ready.")
 
+    # ------------------------
+    # Main Loop
+    # ------------------------
     try:
         while not shutdown_event.is_set():
             time.sleep(0.1)
     except KeyboardInterrupt:
         print("\nCtrl+C detected")
         shutdown_event.set()
-
     finally:
         print("Shutting down...")
-
         shutdown_event.set()
 
         controller_client.loop_stop()
@@ -273,7 +247,6 @@ def main():
 
         motorStop()
         GPIO.cleanup()
-
         print("Clean exit complete.")
 
 # ------------------------
